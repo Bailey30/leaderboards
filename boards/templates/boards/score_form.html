@@ -1,0 +1,24 @@
+{% block score_form %}
+
+<head>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const score_form = document.getElementById("score_form")
+            score_form.addEventListener("submit", () => {
+                score_dialog.close()
+                score_form.reset()
+            })
+        })
+
+    </script>
+</head>
+<div id="form_container">
+    <div>form</div>
+    <form id="score_form" action="{% url 'boards:submit_score' board.id %}" method="post"
+        hx-post="{% url 'boards:submit_score' board.id %}" hx-swap="none">
+        {% csrf_token %}
+        {{ form }}
+        <input id=" submit_score" type="submit" value="Submit" />
+    </form>
+</div>
+{% endblock %}

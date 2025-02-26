@@ -1,0 +1,25 @@
+version: "3.8" # Specifies the Docker Compose file format version
+
+services: # Defines all the containers (services) that will run in this setup
+  redis: # The name of the Redis service (container)
+    image: redis/redis-stack-server:latest # Uses the latest version of Redis Stack
+    container_name: redis-stack-server # Sets a custom name for the container instead of a random one
+    ports:
+      - "6379:6379" # Maps port 6379 (Redis default) from the container to the host machine
+      - "8001:8001" # Maps port 8001 for the Redis Stack Web UI (if needed)
+    volumes:
+      - ./local-data:/data # Creates a bind mount: maps the './local-data' folder on your host to '/data' in the container
+
+volumes: {} # Empty volume section (not needed since we are using a bind mount)
+
+# create local-date folder:
+#  mkdir local-data
+
+# start Redis with docker compose:
+# docker compose up -d
+
+# access redis cli instead the container
+# docker exec -it redis-stack-server redis-cli
+
+# test redis is working
+# PING - should return PONG

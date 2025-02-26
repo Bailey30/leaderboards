@@ -1,0 +1,9 @@
+<!-- {% load static %} -->
+<!-- <link rel="stylesheet" href="{% static 'boards/style.css' %}" /> -->
+
+<body>
+    <h1>Leaderboard</h1>
+    {% for board in boards %}
+    {% include "boards/board.html" with board=board %}
+    {% endfor %}
+</body>
