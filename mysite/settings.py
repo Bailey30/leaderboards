@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+import mimetypes
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -27,11 +28,15 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# prevents mime type error with javascript module imports
+mimetypes.add_type("application/javascript", ".js", True)
 
 # Application definition
 
 INSTALLED_APPS = [
+    "daphne",
     "boards",
+    "channels",
     "django_browser_reload",
     "django.contrib.admin",
     "django.contrib.auth",
@@ -62,6 +67,12 @@ CACHES = {
     }
 }
 
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
+}
+
 ROOT_URLCONF = "mysite.urls"
 
 TEMPLATES = [
@@ -82,6 +93,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "mysite.wsgi.application"
 
+ASGI_APPLICATION = "mysite.asgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -129,6 +141,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = "static/"
+# STATICFILES_DIRS = [BASE_DIR / "static"]
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

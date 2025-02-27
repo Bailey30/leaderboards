@@ -1,14 +1,19 @@
 {% extends "boards/base.html" %}
+{% load static %}
 {% block content %}
 
 <head>
-    <script>
+    <script type="module">
+        import {sendMessage} from "{% static 'boards/websocket.js' %}"
         document.addEventListener("DOMContentLoaded", () => {
             const dialog = document.getElementById("score_dialog")
             const board_name = document.getElementById("board_name")
 
+
             board_name.addEventListener("click", () => {
                 dialog.showModal()
+                console.log({dialog})
+                sendMessage("websocket message")
             })
         })
     </script>
