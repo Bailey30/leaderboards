@@ -1,24 +1,24 @@
-{% extends "boards/base.html" %}
+<!-- {% extends "boards/page_container.html" %} -->
 {% load static %}
-{% block content %}
+<!-- {% block content %} -->
 
 <head>
-    <script type="module">
-        import {sendMessage} from "{% static 'boards/websocket.js' %}"
+    <script>
         document.addEventListener("DOMContentLoaded", () => {
             const dialog = document.getElementById("score_dialog")
             const board_name = document.getElementById("board_name")
+            console.log({board_name})
 
 
             board_name.addEventListener("click", () => {
+                console.log("opening modal.")
                 dialog.showModal()
-                console.log({dialog})
-                sendMessage("websocket message")
             })
         })
     </script>
 </head>
 <h2 id="board_name">{{ board.name }}</h2>
+<span style="display: none;">{{ board.id }}</span>
 {% for score in board.scores %}
 <div>
     <span>{{ score.value }}</span>
@@ -28,4 +28,4 @@
 <dialog id="score_dialog">
     {% include "boards/score_form.html" %}
 </dialog>
-{% endblock %}
+<!-- {% endblock %} -->

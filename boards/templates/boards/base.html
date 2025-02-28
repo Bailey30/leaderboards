@@ -1,6 +1,15 @@
+{% load static %}
+
 <head>
-  <script src="https://unpkg.com/htmx.org@1.9.6"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.6"></script>
+    <script type="module">
+        // if (!window.scoreSocket) {
+        import {wsInstance} from "{% static 'boards/websocket.js' %}"
+        console.log("base.html")
+    </script>
 </head>
+
 <body>
-  {% block content %}{% endblock %}
+    <!-- {% block content %}{% endblock %} -->
+    {% include "boards/index.html" %}
 </body>

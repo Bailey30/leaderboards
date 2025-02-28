@@ -1,4 +1,3 @@
-from os import add_dll_directory
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.views import View
@@ -42,19 +41,3 @@ class BoardDetailView(TemplateView):
             },
             "form": ScoreForm(),
         }
-
-
-class ScoreFormView(FormView):
-    template_name = "boards/score_form.html"
-    form_class = ScoreForm
-
-    def form_valid(self, form):
-        print("kwargs:", self.kwargs)
-        board_id = self.kwargs["board_id"]
-        username = form.cleaned_data["username"]
-        score = form.cleaned_data["score"]
-
-        add_sorted_set_value(f"leaderboard:{board_id}", {username: int(score)})
-        # add_hash("leaderboard:1", mappings={"name": "Board Two", "id": 1})
-
-        return HttpResponse(status=201)

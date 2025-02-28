@@ -1,5 +1,12 @@
 <!-- {% load static %} -->
-<!-- <link rel="stylesheet" href="{% static 'boards/style.css' %}" /> -->
+<script type="module">
+    import {WebsocketManager} from "{% static 'boards/websocket.js' %}"
+    const boards = {{boards| safe}}
+    console.log({boards})
+    const board_ids = boards.map((board) => board.id)
+
+    const wsInstance = new WebsocketManager(board_ids.toString())
+</script>
 
 <body>
     <h1>Leaderboard</h1>
