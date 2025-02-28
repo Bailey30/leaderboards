@@ -4,9 +4,9 @@
 <head>
     <script type="module">
         import {WebsocketManager} from "{% static 'boards/websocket.js' %}"
-        const boardID = {{board.id}}
-        console.log({boardID})
+
         const wsInstance = new WebsocketManager({{board.id}})
+
         document.addEventListener("DOMContentLoaded", () => {
             const score_form = document.getElementById("score_form")
             const submit_button = document.getElementById("submit_score")
@@ -14,12 +14,15 @@
 
             message: submit_button.addEventListener("click", () => {
                 console.log("Submitting form.")
+
                 score_dialog.close()
+
                 wsInstance.sendMessage({
                     board_id: board_id.value,
                     username: id_username.value,
                     score: id_score.value,
                 })
+
                 score_form.reset()
             })
         })
@@ -28,15 +31,10 @@
 </head>
 <div id="form_container">
     <div>form</div>
-    <!-- <form id="score_form"
-       action="{% url 'boards:submit_score' board.id %}"
-       method="post"
-       -->
-    <!-- hx-post="{% url 'boards:submit_score' board.id %}" hx-swap="none"> -->
     <form id="score_form">
         <!-- {% csrf_token %} -->
         {{ form }}
-        <input value="{{ board.id }}" name="board_id" />
+        <input style="display: none;" value="{{ board.id }}" name="board_id" />
         <input id="submit_score" value="Submit" type="button" />
     </form>
 </div>
