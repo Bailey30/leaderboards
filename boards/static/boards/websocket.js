@@ -1,3 +1,5 @@
+import { updateScoreList } from "./utils.js";
+
 export class WebsocketManager {
   constructor(board_id) {
     console.log({ board_id });
@@ -22,9 +24,12 @@ export class WebsocketManager {
 
   onMessage(e) {
     const data = JSON.parse(e.data);
+    console.log({ data });
     const message = data.message;
 
-    console.log(`[Websocket message received: ${message}]`);
+    console.log(`[Websocket message received: ${JSON.stringify(message)}]`);
+
+    updateScoreList(message);
   }
 
   sendMessage(message) {

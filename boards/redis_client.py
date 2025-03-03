@@ -3,7 +3,7 @@ from typing import Dict, List
 import redis.asyncio as redis
 
 # import aioredis
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 
 from boards.utils import map_scores
 
@@ -25,10 +25,14 @@ class Score:
     username: str
     value: int
 
+    def mapping(self):
+        return {self.username: self.value}
 
-async def save_score(board_id, value: Score) -> None:
+
+async def save_score(board_id, score: Score) -> None:
     leaderboard_key = f"leaderboard:{board_id}"
-    added = await redis_client.zadd(leaderboard_key, **value)
+    print("score: ", asdict(score))
+    added = await redis_client.zadd(leaderboard_key, score.mapping())
     print("added: ", added)
 
 
@@ -53,7 +57,9 @@ async def save_leaderboard_info(board_id, mappings) -> None:
 
 async def get_leaderboard(board_id) -> Dict:
     leaderboard_key = f"leaderboard:{board_id}:info"
-    return await redis_client.hgetall(leaderboard_key)
+    board = await redis_client.hgetall(leaderboard_key)
+    print("board:", board)
+    return board
 
 
 async def get_all_leaderboards():
