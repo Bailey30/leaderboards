@@ -25,6 +25,7 @@ class ScoreConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
         message = text_data_json["message"]
+        print("message:", message)
 
         # Sends an event to a group. The type of event corresponds to a method that
         # should be invoked on consumers that receive an event.

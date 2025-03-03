@@ -1,38 +1,69 @@
 from typing import Dict, List
-import redis
+
+import redis.asyncio as redis
+
+# import aioredis
+from dataclasses import dataclass
 
 from boards.utils import map_scores
 
 # Connect to Redis
 redis_client = redis.Redis(host="localhost", port=6379, db=0, decode_responses=True)
+# redis_client = aioredis.from_url(
+#     "redis://localhost", port=6376, db=0, decode_responses=True
+# )
 
 
-def add_sorted_set_value(key, value: Dict[str, str]) -> None:
-    added = redis_client.zadd(key, value)
+@dataclass
+class LeaderboardInfo:
+    id: str
+    name: str
+
+
+@dataclass
+class Score:
+    username: str
+    value: int
+
+
+async def save_score(board_id, value: Score) -> None:
+    leaderboard_key = f"leaderboard:{board_id}"
+    added = await redis_client.zadd(leaderboard_key, **value)
     print("added: ", added)
 
 
-def get_sorted_set(key) -> List:
-    sorted_set = redis_client.zrevrange(key, 0, 10, withscores=True)
+async def get_scores_for_leaderboard(board_id) -> List:
+    leaderboard_key = f"leaderboard:{board_id}"
+    print("leaderboard key:", leaderboard_key)
+    sorted_set = await redis_client.zrevrange(leaderboard_key, 0, 10, withscores=True)
     return sorted_set
 
 
-def add_hash(key, mappings) -> None:
-    added = redis_client.hset(key + ":info", mapping=mappings)
+async def save_leaderboard_info(board_id, mappings) -> None:
+    """
+    Saves information about a leaderboard to a Redis Hash.
+    Info includes id and name.
+    """
+
+    leaderboard_key = f"leaderboard:{board_id}:info"
+    added = await redis_client.hset(leaderboard_key, mapping=mappings)
+
     print("added: ", added)
 
 
-def get_hash(key) -> Dict:
-    return redis_client.hgetall(key + ":info")
+async def get_leaderboard(board_id) -> Dict:
+    leaderboard_key = f"leaderboard:{board_id}:info"
+    return await redis_client.hgetall(leaderboard_key)
 
 
-def get_all_leaderboard():
+async def get_all_leaderboards():
     leaderboard_keys = redis_client.scan_iter("leaderboard:*:info")
     leaderboards = []
 
-    for key in leaderboard_keys:
-        board_info = redis_client.hgetall(key)
-        scores = get_sorted_set(f"leaderboard:{board_info['id']}")
+    async for key in leaderboard_keys:
+        board_info = await redis_client.hgetall(key)
+        print("board info:", board_info)
+        scores = await get_scores_for_leaderboard(board_info["id"])
 
         data = {**board_info, "scores": map_scores(scores)}
         leaderboards.append(data)
