@@ -1,4 +1,4 @@
-from django.http import HttpResponse
+from django.http import Http404, HttpResponse
 from django.shortcuts import render
 from django.views import View
 from django.views.generic.base import TemplateView
@@ -29,8 +29,11 @@ class BoardDetailView(TemplateView):
         print("kwargs:", kwargs)
         board_id = kwargs["board_id"]
 
+        if not board_id:
+            raise Http404("Board ID not provided,")
+
         scores = await get_scores_for_leaderboard(board_id)  # Fetch scores from Redis
-        board = await get_leaderboard(board_id)  # Fetch metadata
+        board_info = await get_leaderboard(board_id)  # Fetch metadata
 
         return render(
             request,
@@ -38,24 +41,9 @@ class BoardDetailView(TemplateView):
             {
                 "board": {
                     "id": board_id,
-                    "name": board.get("name", "Unknown"),
+                    "name": board_info.get("name", "Unknown"),
                     "scores": map_scores(scores),
                 },
                 "form": ScoreForm(),
             },
         )
-
-    # async def get_context_data(self, **kwargs):
-    #     board_id = kwargs["board_id"]
-    #
-    #     scores = await get_scores_for_leaderboard(board_id)  # Fetch scores from Redis
-    #     board = await get_leaderboard(board_id)  # Fetch metadata
-    #
-    #     return {
-    #         "board": {
-    #             "id": board_id,
-    #             "name": board.get("name", "Unknown"),
-    #             "scores": map_scores(scores),
-    #         },
-    #         "form": ScoreForm(),
-    #     }

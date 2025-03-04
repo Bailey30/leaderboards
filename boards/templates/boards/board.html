@@ -1,10 +1,17 @@
-<h2>
-  <a href="{% url 'boards:board_detail' board.id %}">{{ board.name }}</a>
-</h2>
-{% for score in board.scores %}
-<div>
-  <span>{{ score.value }}</span>
-  <span>{{ score.username }}</span>
-  <div></div>
+{% load static %}
+<div id="leaderboard_{{ board.id }}">
+    {% if request.path == '/boards/' %}
+    <a href=" {% url 'boards:board_detail' board.id %}">{{ board.name }}</a>
+    {% else %}
+    <h2 id="board_name">{{ board.name }}</h2>
+    {% endif %}
+    <span style="display: none">{{ board.id }}</span>
+    <div id="scores_{{ board.id }}">
+        {% for score in board.scores %}
+        <div>
+            <span>{{ score.value }}</span>
+            <span>{{ score.username }}</span>
+        </div>
+        {% endfor %}
+    </div>
 </div>
-{% endfor %}

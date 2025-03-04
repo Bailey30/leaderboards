@@ -17,19 +17,8 @@
         })
     </script>
 </head>
-<div id=leaderboard_{{ board.id }}>
-    <h2 id="board_name">{{ board.name }}</h2>
-    <span style="display: none;">{{ board.id }}</span>
-    <div id=scores_{{ board.id }}>
-        {% for score in board.scores %}
-        <div>
-            <span>{{ score.value }}</span>
-            <span>{{ score.username }}</span>
-        </div>
-        {% endfor %}
-    </div>
-    <dialog id="score_dialog">
-        {% include "boards/score_form.html" %}
-    </dialog>
-</div>
+{% include "boards/board.html" with board=board %}
+<dialog id="score_dialog">
+    {% include "boards/score_form.html" %}
+</dialog>
 <!-- {% endblock %} -->
