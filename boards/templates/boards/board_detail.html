@@ -18,6 +18,7 @@
     </script>
 </head>
 {% include "boards/board.html" with board=board %}
+{% if user.is_authenticated %}<p>username:{{ user.get_username }}</p>{% endif %}
 <dialog id="score_dialog">
     {% include "boards/score_form.html" %}
 </dialog>
