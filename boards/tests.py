@@ -1,7 +1,21 @@
-from types import new_class
-from django.test import TestCase, override_settings
+from asgiref.sync import sync_to_async
+from django.test import TestCase
 from django.urls import reverse
 from unittest.mock import patch, AsyncMock
+from django.contrib.auth import login
+from django.contrib.auth.models import User
+from django.http import HttpRequest, request
+from django.contrib.sessions.middleware import SessionMiddleware
+from django.test.utils import override_settings
+
+
+async def create_user():
+    user = await sync_to_async(User.objects.create_user)(
+        "alex", "test@hotmail.com", "Password1"
+    )
+    await sync_to_async(user.save)()
+    print("use gfdgfdgfdg:", user)
+    return user
 
 
 @patch("boards.views.get_all_leaderboards", new_callable=AsyncMock)
@@ -34,6 +48,18 @@ class BoardIndexViewTests(TestCase):
         response = await self.async_client.get(reverse("boards:index"))
 
         self.assertEqual(len(response.context["boards"]), 2)
+
+    @override_settings(
+        AUTHENTICATION_BACKENDS=["django.contrib.auth.backends.ModelBackend"]
+    )
+    async def test_should_return_current_user_in_context(
+        self, mock_get_all_leaderboards
+    ):
+        user = await create_user()
+        await sync_to_async(self.client.force_login)(user=user)
+
+        response = await sync_to_async(self.client.get)(reverse("boards:index"))
+        self.assertEqual(response.context["auser"].username, "alex")
 
 
 @patch("boards.views.get_scores_for_leaderboard", new_callable=AsyncMock)

@@ -24,24 +24,22 @@ class IndexView(View):
     async def get(self, request) -> HttpResponse:
         boards = await get_all_leaderboards()
         print("boards:", boards)
-        return render(request, self.template_name, {"boards": boards})
+        user = await request.auser()
+        return render(request, self.template_name, {"boards": boards, "auser": user})
 
 
 class BoardDetailView(TemplateView):
     template_name = "boards/board_detail.html"
 
     async def get(self, request, *args, **kwargs):
-        users = await sync_to_async(list)(User.objects.all())
-        print("users:", users)
-        print("kwargs:", kwargs)
         board_id = kwargs["board_id"]
-        user = await request.auser()
-        # print("user", user.username)
         if not board_id:
             raise Http404("Board ID not provided,")
 
         scores = await get_scores_for_leaderboard(board_id)  # Fetch scores from Redis
         board_info = await get_leaderboard(board_id)  # Fetch metadata
+
+        user = await request.auser()
 
         return render(
             request,
@@ -54,6 +52,7 @@ class BoardDetailView(TemplateView):
                 },
                 "form": ScoreForm(),
                 "user": user,
+                "auser": user,
             },
         )
 
@@ -63,20 +62,18 @@ class RegistrationView(FormView):
     form_class = RegistrationForm
 
     def form_valid(self, form):
-        print("form:", form)
-
         param = self.request.GET.get("source", "index")
 
         redirect_url = reverse(f"boards:{param}")
         user = form.save()
+
         login(self.request, user)
+
         return HttpResponseRedirect(redirect_url)
 
     def form_invalid(self, form):
-        print("request:", self.request)
         param = self.request.GET.get("source", "")
-        print("param:", param)
-        print(self.request.path)
+
         return render(
             self.request, self.template_name, self.get_context_data(form=form)
         )
