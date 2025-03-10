@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib.auth.forms import BaseUserCreationForm
+from django.contrib.auth.forms import BaseUserCreationForm, AuthenticationForm
 
 
 class ScoreForm(forms.Form):
@@ -9,3 +9,11 @@ class ScoreForm(forms.Form):
 
 class RegistrationForm(BaseUserCreationForm):
     email = forms.EmailField(required=True)
+
+
+class LoginForm(AuthenticationForm):
+    pass
+
+
+class LogoutForm(forms.Form):
+    pass

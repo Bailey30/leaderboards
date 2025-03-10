@@ -21,4 +21,6 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.group.dev.dependencies]
 django-browser-reload = "^1.18.0"
+nest-asyncio = "^1.6.0"
+pytest = "^8.3.5"
 

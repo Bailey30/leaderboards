@@ -4,9 +4,7 @@ from django.urls import reverse
 from django.views import View
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import FormView
-from django.contrib.auth.models import User
-from django.contrib.auth import login
-from asgiref.sync import sync_to_async
+from django.contrib.auth import authenticate, login, logout
 
 from boards.redis_client import (
     get_all_leaderboards,
@@ -15,7 +13,7 @@ from boards.redis_client import (
 )
 from boards.utils import map_scores
 
-from .forms import RegistrationForm, ScoreForm
+from .forms import LoginForm, LogoutForm, RegistrationForm, ScoreForm
 
 
 class IndexView(View):
@@ -23,7 +21,6 @@ class IndexView(View):
 
     async def get(self, request) -> HttpResponse:
         boards = await get_all_leaderboards()
-        print("boards:", boards)
         user = await request.auser()
         return render(request, self.template_name, {"boards": boards, "auser": user})
 
@@ -77,3 +74,43 @@ class RegistrationView(FormView):
         return render(
             self.request, self.template_name, self.get_context_data(form=form)
         )
+
+
+class Login(FormView):
+    template_name = "boards/login.html"
+    form_class = LoginForm
+
+    def form_valid(self, form):
+        # print("post:", self.request.POST)
+        # print("available attributes:", dir(self))
+        # print(Login.__mro__)  # Shows method resolution order
+        # help(FormView) # Shows breakdown of methods, and inheritance of a class.
+        param = self.request.GET.get("source", "index")
+
+        username = self.request.POST["username"]
+        password = self.request.POST["password"]
+
+        user = authenticate(self.request, username=username, password=password)
+
+        if user is not None:
+            login(self.request, user)
+            redirect_url = reverse(f"boards:{param}")
+            return HttpResponseRedirect(redirect_url)
+
+        return self.form_invalid(form)
+
+    def form_invalid(self, form):
+        return self.render_to_response(self.get_context_data(form=form))
+
+
+class Logout(FormView):
+    form_class = LogoutForm
+
+    def form_valid(self, form) -> HttpResponseRedirect:
+        param = self.request.GET.get("source", "index")
+
+        redirect_url = reverse(f"boards:{param}")
+
+        logout(self.request)
+
+        return HttpResponseRedirect(redirect_url)

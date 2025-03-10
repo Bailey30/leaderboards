@@ -1,4 +1,6 @@
-<!-- {% load static %} -->
+{% extends "boards/base.html" %}
+{% load static %}
+{% block content %}
 <script type="module">
     import {WebsocketManager} from "{% static 'boards/websocket.js' %}"
     const boards = {{boards| safe}}
@@ -7,10 +9,10 @@
 
     const wsInstance = new WebsocketManager(board_ids.toString())
 </script>
-
-<body>
+<div>
     <h1>Leaderboard</h1>
     {% for board in boards %}
     {% include "boards/board.html" with board=board %}
     {% endfor %}
-</body>
+</div>
+{% endblock %}

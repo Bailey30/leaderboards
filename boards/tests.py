@@ -1,5 +1,6 @@
+import pytest
 from asgiref.sync import sync_to_async
-from django.test import TestCase
+from django.test import TestCase, RequestFactory
 from django.urls import reverse
 from unittest.mock import patch, AsyncMock
 from django.contrib.auth import login
@@ -14,7 +15,6 @@ async def create_user():
         "alex", "test@hotmail.com", "Password1"
     )
     await sync_to_async(user.save)()
-    print("use gfdgfdgfdg:", user)
     return user
 
 
@@ -49,9 +49,6 @@ class BoardIndexViewTests(TestCase):
 
         self.assertEqual(len(response.context["boards"]), 2)
 
-    @override_settings(
-        AUTHENTICATION_BACKENDS=["django.contrib.auth.backends.ModelBackend"]
-    )
     async def test_should_return_current_user_in_context(
         self, mock_get_all_leaderboards
     ):
@@ -81,8 +78,6 @@ class BoardDetailViewTests(TestCase):
             reverse("boards:board_detail", kwargs={"board_id": test_board_id})
         )
 
-        print("response", response)
-
         mock_get_scores_for_leaderboard.assert_called_once_with(test_board_id)
         mock_get_leaderboard.assert_called_once_with(test_board_id)
 
@@ -95,3 +90,57 @@ class BoardDetailViewTests(TestCase):
                 {"username": "username2", "value": 22222},
             ],
         )
+
+
+@patch("boards.views.get_all_leaderboards", new_callable=AsyncMock)
+class BoardsAuthentication(TestCase):
+    def setUp(self):
+        self.mock_boards = [
+            {
+                "name": "board one",
+                "id": "0",
+                "scores": [{"username": "user one", "value": "value one"}],
+            },
+            {
+                "name": "board two",
+                "id": "1",
+                "scores": [{"username": "user two", "value": "value two"}],
+            },
+        ]
+        self.login_data = {"username": "alex", "password": "Password1"}
+
+    async def login_user(self):
+        """Helper to log in user"""
+        return await sync_to_async(self.client.post)(
+            reverse("boards:login"), self.login_data, follow=True
+        )
+
+    async def test_request_should_contain_login_details(
+        self, mock_get_all_leaderboards
+    ):
+        response = await sync_to_async(self.client.post)(
+            reverse("boards:login"), self.login_data, follow=True
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("username", response.wsgi_request.POST)
+        self.assertIn("password", response.wsgi_request.POST)
+
+    async def test_should_login_user(self, mock_get_all_leaderboards):
+        mock_get_all_leaderboards.return_value = self.mock_boards
+
+        await create_user()
+        response = await self.login_user()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["auser"].username, "alex")
+
+    async def test_should_logout_user(self, mock_get_all_leaderboards):
+        mock_get_all_leaderboards.return_value = self.mock_boards
+
+        await create_user()
+        response = await sync_to_async(self.client.post)(
+            reverse("boards:logout"), follow=True
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["auser"].username, "")

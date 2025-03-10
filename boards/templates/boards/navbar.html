@@ -1,0 +1,12 @@
+{% load static %}
+<div>
+    <p>{{ auser.username }}</p>
+    <form action="{% url 'boards:logout' %}" method="post">
+        {% if auser.is_authenticated %}
+        <button type="submit">Log out</button>
+        {% else %}
+        <a href="{% url 'boards:login' %}">Log in</a>
+        {% endif %}
+        </a>
+    </form>
+</div>
